@@ -44,8 +44,7 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
 app.get("/", (req, res) => {
-    // const ip = req.ip
-    const ip = "2a09:bac5:472e:1482::20b:4c"
+    const ip = req.ip
     if (!isValidIP(ip?.toString() || "")) {
         return res.status(400).json({ error: "Invalid IP", status: 400 })
     }
