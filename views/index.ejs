@@ -218,11 +218,12 @@
             <main class="main">
                 <section class="panel" aria-label="아이피 정보">
                     <p class="label">Public IP Address</p>
-                    <h2 class="ip">${ip}</h2>
+                    <h2 class="ip"><%= countryData?.ip %></h2>
                     <p class="desc">
                         현재 접속 위치는
-                        <span class="country"
-                            >${data.country_name} (${data.country_code})</span
+                        <span class="country">
+                            <%= countryData?.country_name ?? "Unknown" %> (<%=
+                            countryData?.country_code ?? "--" %>) </span
                         >로 확인됩니다.
                     </p>
                 </section>

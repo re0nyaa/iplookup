@@ -8,12 +8,18 @@ importers:
 
   .:
     dependencies:
+      '@maxmind/geoip2-node':
+        specifier: ^6.3.4
+        version: 6.3.4
       axios:
         specifier: ^1.13.6
         version: 1.13.6
       dotenv:
         specifier: ^17.3.1
         version: 17.3.1
+      ejs:
+        specifier: ^5.0.1
+        version: 5.0.1
       express:
         specifier: ^5.2.1
         version: 5.2.1
@@ -23,9 +29,6 @@ importers:
       helmet:
         specifier: ^8.1.0
         version: 8.1.0
-      maxmind:
-        specifier: ^5.0.5
-        version: 5.0.5
     devDependencies:
       '@types/express':
         specifier: ^5.0.6
@@ -198,6 +201,9 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@maxmind/geoip2-node@6.3.4':
+    resolution: {integrity: sha512-BTRFHCX7Uie4wVSPXsWQfg0EVl4eGZgLCts0BTKAP+Eiyt1zmF2UPyuUZkaj0R59XSDYO+84o1THAtaenUoQYg==}
+
   '@types/body-parser@1.19.6':
     resolution: {integrity: sha512-HLFeCYgz89uk22N5Qg3dvGvsv46B8GLvKKo1zKG4NybA8U2DiEO3w9lqGg29t/tfLRJpJ6iQxnVw4OnB7MoM9g==}
 
@@ -301,6 +307,11 @@ packages:
 
   ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
+
+  ejs@5.0.1:
+    resolution: {integrity: sha512-COqBPFMxuPTPspXl2DkVYaDS3HtrD1GpzOGkNTJ1IYkifq/r9h8SVEFrjA3D9/VJGOEoMQcrlhpntcSUrM8k6A==}
+    engines: {node: '>=0.12.18'}
+    hasBin: true
 
   encodeurl@2.0.0:
     resolution: {integrity: sha512-Q0n9HRi4m6JuGIV1eFlmvJB7ZEVxu93IrMyiMsGC0lrMJMWzRgx6WGquyfQgZVb31vhGgXnfmPNNXmxnOkRBrg==}
@@ -667,6 +678,10 @@ snapshots:
   '@esbuild/win32-x64@0.27.4':
     optional: true
 
+  '@maxmind/geoip2-node@6.3.4':
+    dependencies:
+      maxmind: 5.0.5
+
   '@types/body-parser@1.19.6':
     dependencies:
       '@types/connect': 3.4.38
@@ -778,6 +793,8 @@ snapshots:
       gopd: 1.2.0
 
   ee-first@1.1.1: {}
+
+  ejs@5.0.1: {}
 
   encodeurl@2.0.0: {}
 
