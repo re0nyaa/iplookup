@@ -44,13 +44,17 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
 app.get("/", (req, res) => {
-    const ip = req.ip
-    // const ip = "2a09:bac5:472e:1482::20b:4c"
+    // const ip = req.ip
+    const ip = "2a09:bac5:472e:1482::20b:4c"
     if (!isValidIP(ip?.toString() || "")) {
         return res.status(400).json({ error: "Invalid IP", status: 400 })
     }
     console.log(`[IP Lookup] Request for IP: ${ip}`)
     const data = lookupIp(ip?.toString() || "")
+    const countryData = data?.country as {
+        country_name?: string
+        country_code?: string
+    } | null
 
     if (!data) {
         return res.status(404).json({ error: "IP data not found", status: 404 })
@@ -280,7 +284,7 @@ app.get("/", (req, res) => {
                     <p class="desc">
                         현재 접속 위치는
                         <span class="country"
-                            >${data.country_name} (${data.country_code})</span
+                            >${countryData?.country_name ?? "Unknown"} (${countryData?.country_code ?? "--"})</span
                         >로 확인됩니다.
                     </p>
                 </section>
@@ -315,7 +319,7 @@ app.get("/api/ip/:ip", (req, res) => {
                 .json({ error: "IP data not found", status: 404 })
         }
 
-        res.json({ ip: req.params.ip, data })
+        res.json({ ip: ip?.toString() || req.params.ip, data })
     } catch (error: any) {
         if (error.message === "invalid_ip") {
             return res.status(400).json({ error: "Invalid IP", status: 400 })

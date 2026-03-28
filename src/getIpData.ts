@@ -7,23 +7,41 @@ import * as maxmind from "maxmind"
 
 const DEFAULT_UPDATE_INTERVAL_MS = 24 * 60 * 60 * 1000
 const DEFAULT_DATA_DIR = path.join(process.cwd(), "public", "data")
-const DEFAULT_FILE_NAME = "ip-data.mmdb"
+const DEFAULT_COUNTRY_FILE_NAME = "ip-data.mmdb"
+const DEFAULT_ASN_FILE_NAME = "ip-asn.mmdb"
 
-let reader: maxmind.Reader<any> | null = null
-let activeDbPath: string | null = null
+type MmdbKind = "country" | "asn"
+
+type LookupResult = Record<string, unknown> | null
+
+type ReaderStore = Record<MmdbKind, maxmind.Reader<any> | null>
+type PathStore = Record<MmdbKind, string | null>
+
+const readers: ReaderStore = {
+    country: null,
+    asn: null,
+}
+
+const activeDbPaths: PathStore = {
+    country: null,
+    asn: null,
+}
+
 let updateTimer: NodeJS.Timeout | null = null
 let updateTask: Promise<void> | null = null
 
-function getMmdbUrl(): string {
-    const url = process.env.IPLOCATE_API_KEY
-        ? `https://www.iplocate.io/download/ip-to-country.mmdb?apikey=${process.env.IPLOCATE_API_KEY}&variant=daily`
-        : ""
+function getMmdbUrl(kind: MmdbKind): string {
+    const apiKey = process.env.IPLOCATE_API_KEY
 
-    if (!url) {
+    if (!apiKey) {
         throw new Error("MMDB_URL or IPLOCATE_API_KEY is not set")
     }
 
-    return url
+    if (kind === "country") {
+        return `https://www.iplocate.io/download/ip-to-country.mmdb?apikey=${apiKey}&variant=daily`
+    }
+
+    return `https://www.iplocate.io/download/ip-to-asn.mmdb?apikey=${apiKey}&variant=daily`
 }
 
 function getFilenameFromDisposition(disposition: string | null): string | null {
@@ -63,15 +81,18 @@ async function downloadData(url: string, dir: string): Promise<string> {
     return tempPath
 }
 
-async function loadDatabase(filePath: string) {
+async function loadDatabase(kind: MmdbKind, filePath: string) {
     const nextReader = await maxmind.open(filePath)
-    reader = nextReader
-    activeDbPath = filePath
+    readers[kind] = nextReader
+    activeDbPaths[kind] = filePath
 }
 
-function getDbPath(): string {
+function getDbPath(kind: MmdbKind): string {
     const dataDir = process.env.MMDB_DATA_DIR || DEFAULT_DATA_DIR
-    const fileName = process.env.MMDB_FILE_NAME || DEFAULT_FILE_NAME
+    const fileName =
+        kind === "country"
+            ? process.env.MMDB_FILE_NAME || DEFAULT_COUNTRY_FILE_NAME
+            : process.env.MMDB_ASN_FILE_NAME || DEFAULT_ASN_FILE_NAME
 
     return path.join(dataDir, fileName)
 }
@@ -80,15 +101,19 @@ async function refreshMmdb(reason: "startup" | "daily" | "manual") {
     if (updateTask) return updateTask
 
     updateTask = (async () => {
-        const dbPath = getDbPath()
-        const dbDir = path.dirname(dbPath)
-        const sourceUrl = getMmdbUrl()
-        const downloadedPath = await downloadData(sourceUrl, dbDir)
+        const kinds: MmdbKind[] = ["country", "asn"]
 
-        fs.renameSync(downloadedPath, dbPath)
-        await loadDatabase(dbPath)
+        for (const kind of kinds) {
+            const dbPath = getDbPath(kind)
+            const dbDir = path.dirname(dbPath)
+            const sourceUrl = getMmdbUrl(kind)
+            const downloadedPath = await downloadData(sourceUrl, dbDir)
 
-        console.log(`[MMDB] Updated (${reason}) -> ${dbPath}`)
+            fs.renameSync(downloadedPath, dbPath)
+            await loadDatabase(kind, dbPath)
+
+            console.log(`[MMDB] Updated ${kind} (${reason}) -> ${dbPath}`)
+        }
     })()
 
     try {
@@ -99,10 +124,15 @@ async function refreshMmdb(reason: "startup" | "daily" | "manual") {
 }
 
 export async function initializeMmdbService() {
-    const dbPath = getDbPath()
+    const countryDbPath = getDbPath("country")
+    const asnDbPath = getDbPath("asn")
 
-    if (fs.existsSync(dbPath)) {
-        await loadDatabase(dbPath)
+    if (fs.existsSync(countryDbPath)) {
+        await loadDatabase("country", countryDbPath)
+    }
+
+    if (fs.existsSync(asnDbPath)) {
+        await loadDatabase("asn", asnDbPath)
     }
 
     await refreshMmdb("startup")
@@ -124,8 +154,14 @@ export async function triggerMmdbUpdate() {
 
 export function getMmdbStatus() {
     return {
-        loaded: !!reader,
-        dbPath: activeDbPath,
+        loaded: {
+            country: !!readers.country,
+            asn: !!readers.asn,
+        },
+        dbPath: {
+            country: activeDbPaths.country,
+            asn: activeDbPaths.asn,
+        },
         autoUpdate: !!updateTimer,
     }
 }
@@ -135,17 +171,21 @@ export function lookupIp(ip: string) {
         throw new Error("invalid_ip")
     }
 
-    if (!reader) {
+    if (!readers.country || !readers.asn) {
         throw new Error("mmdb_not_loaded")
     }
 
-    const result = reader.get(ip)
+    const country = readers.country.get(ip) as LookupResult
+    const asn = readers.asn.get(ip) as LookupResult
 
-    if (!result) {
+    if (!country && !asn) {
         return null
     }
 
-    return result
+    return {
+        country,
+        asn,
+    }
 }
 
 export function stopMmdbService() {
