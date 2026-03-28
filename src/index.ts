@@ -9,10 +9,10 @@ import {
     lookupIp,
     triggerMmdbUpdate,
 } from "./getIpData.ts"
-import axios from "axios"
 import helmet from "helmet"
 import rateLimit from "express-rate-limit"
 import net from "net"
+dotenv.config()
 
 function isValidIP(ip: string) {
     return net.isIP(ip) !== 0
@@ -24,14 +24,14 @@ const limiter = rateLimit({
     legacyHeaders: false,
     skip: (req) => {
         const ip = req.ip
-        return ip === "127.0.0.1" || ip === "::1"
+        return (
+            ip === "127.0.0.1" || ip === "::1" || ip === process.env.SERVER_IP
+        )
     },
 })
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-
-dotenv.config()
 
 const app = express()
 const PORT = 3003
