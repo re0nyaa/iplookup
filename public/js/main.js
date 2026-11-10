@@ -1,8 +1,10 @@
 const ipDisplay = document.getElementById("ipDisplay")
 const countrySummary = document.getElementById("countrySummary")
 const metaCountry = document.getElementById("metaCountry")
-const metaOrg = document.getElementById("metaOrg")
-const metaRoute = document.getElementById("metaRoute")
+const metaAsn = document.getElementById("metaAsn")
+const metaAsnOrg = document.getElementById("metaAsnOrg")
+const metaAsnCountry = document.getElementById("metaAsnCountry")
+const metaNetwork = document.getElementById("metaNetwork")
 const metaDomain = document.getElementById("metaDomain")
 const apiLink = document.getElementById("apiLink")
 const errorBox = document.getElementById("errorBox")
@@ -13,8 +15,10 @@ const initialState = {
     ip: ipDisplay.textContent.trim(),
     countrySummary: countrySummary.textContent.trim(),
     metaCountry: metaCountry.textContent.trim(),
-    metaOrgNodes: Array.from(metaOrg.childNodes).map((n) => n.cloneNode(true)),
-    metaRoute: metaRoute.textContent.trim(),
+    metaAsnNodes: Array.from(metaAsn.childNodes).map((n) => n.cloneNode(true)),
+    metaAsnOrg: metaAsnOrg.textContent.trim(),
+    metaAsnCountry: metaAsnCountry.textContent.trim(),
+    metaNetwork: metaNetwork.textContent.trim(),
     metaDomainNodes: Array.from(metaDomain.childNodes).map((n) => n.cloneNode(true)),
     apiHref: apiLink.getAttribute("href"),
 }
@@ -35,21 +39,22 @@ function setMetaDomain(domainRaw) {
     }
 }
 
-function setMetaOrg(orgName, asnRaw) {
-    metaOrg.textContent = ""
+function setMetaAsn(asnName, asnRaw) {
+    metaAsn.textContent = ""
+    const name = asnName || "--"
     const asnClean =
         asnRaw && asnRaw !== "--" ? String(asnRaw).replace(/^AS/i, "") : null
     if (asnClean) {
-        metaOrg.appendChild(document.createTextNode(`${orgName} (`))
+        metaAsn.appendChild(document.createTextNode(`${name} (`))
         const link = document.createElement("a")
         link.href = `https://radar.cloudflare.com/ko-kr/traffic/as${encodeURIComponent(asnClean)}`
         link.target = "_blank"
         link.rel = "noopener"
         link.textContent = `AS${asnClean}`
-        metaOrg.appendChild(link)
-        metaOrg.appendChild(document.createTextNode(")"))
+        metaAsn.appendChild(link)
+        metaAsn.appendChild(document.createTextNode(")"))
     } else {
-        metaOrg.textContent = `${orgName} (--)`
+        metaAsn.textContent = `${name} (--)`
     }
 }
 
@@ -57,8 +62,10 @@ function renderData(d) {
     ipDisplay.textContent = d.ip
     countrySummary.textContent = `${d.country_name} (${d.country_code})`
     metaCountry.textContent = `${d.country_name} (${d.country_code} · ${d.continent})`
-    setMetaOrg(d.org, d.asn)
-    metaRoute.textContent = d.route
+    setMetaAsn(d.asn_name, d.asn)
+    metaAsnOrg.textContent = d.asn_org
+    metaAsnCountry.textContent = d.asn_country
+    metaNetwork.textContent = d.network
     setMetaDomain(d.domain)
     apiLink.href = `/api/ip/${encodeURIComponent(d.ip)}`
     resetBtn.classList.remove("hidden")
@@ -95,12 +102,14 @@ document.getElementById("lookupForm").addEventListener("submit", async (e) => {
             continent:
                 c.continent || c.continent_code || c.continent?.code || "--",
             asn: a.asn || a.autonomous_system_number || "--",
-            org:
-                a.name ||
+            asn_name: a.name || "--",
+            asn_org:
                 a.org ||
                 a.autonomous_system_organization ||
+                a.name ||
                 "Unknown",
-            route: a.route || "--",
+            asn_country: a.country_code || "--",
+            network: a.network || "--",
             domain: a.domain || "--",
         })
     } catch (err) {
@@ -115,12 +124,13 @@ resetBtn.addEventListener("click", () => {
     ipDisplay.textContent = initialState.ip
     countrySummary.textContent = initialState.countrySummary
     metaCountry.textContent = initialState.metaCountry
-    metaOrg.textContent = ""
-    initialState.metaOrgNodes.forEach((n) => metaOrg.appendChild(n.cloneNode(true)))
-    metaRoute.textContent = initialState.metaRoute
+    metaAsn.textContent = ""
+    initialState.metaAsnNodes.forEach((n) => metaAsn.appendChild(n.cloneNode(true)))
+    metaAsnOrg.textContent = initialState.metaAsnOrg
+    metaAsnCountry.textContent = initialState.metaAsnCountry
+    metaNetwork.textContent = initialState.metaNetwork
     metaDomain.textContent = ""
     initialState.metaDomainNodes.forEach((n) => metaDomain.appendChild(n.cloneNode(true)))
     apiLink.href = initialState.apiHref
     resetBtn.classList.add("hidden")
 })
-

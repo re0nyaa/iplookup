@@ -107,13 +107,15 @@ app.get("/", (req, res) => {
                 asnData?.asn ||
                 asnData?.autonomous_system_number ||
                 "--",
-            org:
-                asnData?.name ||
+            asn_name: asnData?.name || "--",
+            asn_org:
                 asnData?.org ||
                 asnData?.autonomous_system_organization ||
+                asnData?.name ||
                 "Unknown",
+            asn_country: asnData?.country_code || "--",
             domain: asnData?.domain || "--",
-            route: asnData?.route || "--",
+            network: asnData?.network || "--",
         },
     })
 })

@@ -14,7 +14,6 @@
     <div class="shell">
         <main class="main">
             <section class="hero" aria-label="아이피 정보">
-                <span class="label">Public IP Address</span>
                 <div class="ip-row">
                     <h1 class="ip" id="ipDisplay">
                         <%= countryData?.ip %>
@@ -42,26 +41,36 @@
             <div id="errorBox" class="error-msg hidden"></div>
 
             <section class="data-list" aria-label="상세 네트워크 정보">
-                <div class="data-row">
-                    <span class="data-key">국가 / 지역</span>
-                    <span class="data-val" id="metaCountry">
-                        <%= countryData?.country_name ?? "Unknown" %> (<%= countryData?.country_code ?? "--" %> · <%=
-                                    countryData?.continent ?? "--" %>)
-                    </span>
+                <div class="data-group">
+                    <span class="group-title">Location</span>
+                    <div class="data-row">
+                        <span class="data-key">국가 / 지역</span>
+                        <span class="data-val" id="metaCountry"><%= countryData?.country_name ?? "Unknown" %> (<%= countryData?.country_code ?? "--" %> · <%= countryData?.continent ?? "--" %>)</span>
+                    </div>
                 </div>
-                <div class="data-row">
-                    <span class="data-key">네트워크 (ASN)</span>
-                    <span class="data-val" id="metaOrg"><%- `${countryData?.org ?? "Unknown"} (${countryData?.asn && countryData?.asn !== "--" ? `<a href="https://radar.cloudflare.com/ko-kr/traffic/as${String(countryData.asn).replace(/^AS/i, "")}" target="_blank" rel="noopener">AS${String(countryData.asn).replace(/^AS/i, "")}</a>` : "--"})` %></span>
-                </div>
-                <div class="data-row">
-                    <span class="data-key">라우팅 대역</span>
-                    <span class="data-val" id="metaRoute">
-                        <%= countryData?.route ?? "--" %>
-                    </span>
-                </div>
-                <div class="data-row">
-                    <span class="data-key">도메인</span>
-                    <span class="data-val" id="metaDomain"><%- countryData?.domain && countryData?.domain !== "--" ? `<a href="https://${countryData.domain}" target="_blank" rel="noopener">${countryData.domain}</a>` : "--" %></span>
+
+                <div class="data-group">
+                    <span class="group-title">Network & ASN</span>
+                    <div class="data-row">
+                        <span class="data-key">ASN 정보</span>
+                        <span class="data-val" id="metaAsn"><%- `${countryData?.asn_name ?? "--"} (${countryData?.asn && countryData?.asn !== "--" ? `<a href="https://radar.cloudflare.com/ko-kr/traffic/as${String(countryData.asn).replace(/^AS/i, "")}" target="_blank" rel="noopener">AS${String(countryData.asn).replace(/^AS/i, "")}</a>` : "--"})` %></span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-key">운영 기관 (회사)</span>
+                        <span class="data-val" id="metaAsnOrg"><%= countryData?.asn_org ?? "Unknown" %></span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-key">ASN 등록 국가</span>
+                        <span class="data-val" id="metaAsnCountry"><%= countryData?.asn_country ?? "--" %></span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-key">네트워크 대역</span>
+                        <span class="data-val" id="metaNetwork"><%= countryData?.network ?? "--" %></span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-key">도메인</span>
+                        <span class="data-val" id="metaDomain"><%- countryData?.domain && countryData?.domain !== "--" ? `<a href="https://${countryData.domain}" target="_blank" rel="noopener">${countryData.domain}</a>` : "--" %></span>
+                    </div>
                 </div>
             </section>
         </main>
