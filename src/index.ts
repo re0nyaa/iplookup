@@ -59,6 +59,11 @@ function formatCountryInfo(code?: string | null) {
     }
 }
 
+const ATTRIBUTION = {
+    required_text: "IP Data by iplocate.io",
+    url: "https://iplocate.io",
+}
+
 function isValidIP(ip: string) {
     return net.isIP(ip) !== 0
 }
@@ -88,8 +93,8 @@ app.use(
             directives: {
                 defaultSrc: ["'self'"],
                 scriptSrc: ["'self'"],
-                styleSrc: ["'self'", "https://cdn.jsdelivr.net"],
-                fontSrc: ["'self'", "https://cdn.jsdelivr.net"],
+                styleSrc: ["'self'"],
+                fontSrc: ["'self'"],
             },
         },
     })
@@ -101,15 +106,25 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.set("view engine", "ejs")
 app.set("views", path.join(process.cwd(), "views"))
-app.use("/css", express.static(path.join(process.cwd(), "public", "css")))
-app.use("/js", express.static(path.join(process.cwd(), "public", "js")))
+app.use(
+    "/css",
+    express.static(path.join(process.cwd(), "public", "css"), {
+        maxAge: "1d",
+    })
+)
+app.use(
+    "/js",
+    express.static(path.join(process.cwd(), "public", "js"), {
+        maxAge: "1d",
+    })
+)
 
 app.get("/", (req, res) => {
     let ip = req.ip
     if (!isValidIP(ip?.toString() || "")) {
         return res.status(400).json({ error: "Invalid IP", status: 400 })
     }
-    if (ip?.startsWith("::")) {
+    if (ip === "127.0.0.1" || ip === "::1" || ip === "::ffff:127.0.0.1") {
         ip = "1.1.1.1"
     }
 
@@ -130,7 +145,11 @@ app.get("/", (req, res) => {
         !accept.includes("text/html")
 
     if (isCliOrApi) {
-        return res.json({ ip: ip?.toString() || "Unknown", data })
+        return res.json({
+            ip: ip?.toString() || "Unknown",
+            data,
+            attribution: ATTRIBUTION,
+        })
     }
 
     res.render("index", {
@@ -183,7 +202,11 @@ app.get("/api/ip/:ip", (req, res) => {
                 .json({ error: "IP data not found", status: 404 })
         }
 
-        res.json({ ip: ip?.toString() || req.params.ip, data })
+        res.json({
+            ip: ip?.toString() || req.params.ip,
+            data,
+            attribution: ATTRIBUTION,
+        })
     } catch (error: any) {
         if (error.message === "invalid_ip") {
             return res.status(400).json({ error: "Invalid IP", status: 400 })

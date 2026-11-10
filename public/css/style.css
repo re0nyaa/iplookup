@@ -20,11 +20,13 @@ body {
     background: var(--bg);
     color: var(--fg);
     font-family:
-        "Pretendard Variable",
         Pretendard,
         -apple-system,
         BlinkMacSystemFont,
-        system-ui,
+        "Segoe UI",
+        Roboto,
+        "Noto Sans KR",
+        "Apple SD Gothic Neo",
         sans-serif;
     -webkit-font-smoothing: antialiased;
 }
