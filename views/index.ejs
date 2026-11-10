@@ -40,7 +40,7 @@
     }
     </script>
 
-    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/style.css?v=<%= Date.now() %>" />
 </head>
 
 <body>
@@ -48,12 +48,30 @@
         <main class="main">
             <section class="hero" aria-label="아이피 정보">
                 <div class="ip-row">
-                    <h1 class="ip" id="ipDisplay">
-                        <%= countryData?.ip %>
-                    </h1>
+                    <h1 class="ip" id="ipDisplay"><%= countryData?.ip %></h1>
                     <button type="button" class="text-btn" id="copyBtn">
                         <span id="copyText">복사</span>
                     </button>
+                </div>
+                <% 
+                    const isLocal = countryData?.ip === "1.1.1.1";
+                    const isV6 = (countryData?.ip || "").includes(":");
+                    const initV4 = isLocal ? "1.1.1.1" : (!isV6 ? countryData?.ip : null);
+                    const initV6 = isLocal ? "1.1.1.1" : (isV6 ? countryData?.ip : null);
+                %>
+                <div class="dual-ip-list" id="dualIpList">
+                    <div class="dual-ip-item" id="dualIpv4Item">
+                        <span class="dual-ip-label">IPv4</span>
+                        <span class="dual-ip-sep">·</span>
+                        <span class="dual-ip-val <%= initV4 ? '' : 'disabled' %>" id="dualIpv4Val"><%= initV4 || '확인 중...' %></span>
+                        <button type="button" class="mini-copy-btn <%= initV4 ? '' : 'hidden' %>" id="copyIpv4Btn">복사</button>
+                    </div>
+                    <div class="dual-ip-item" id="dualIpv6Item">
+                        <span class="dual-ip-label">IPv6</span>
+                        <span class="dual-ip-sep">·</span>
+                        <span class="dual-ip-val <%= initV6 ? '' : 'disabled' %>" id="dualIpv6Val"><%= initV6 || '확인 중...' %></span>
+                        <button type="button" class="mini-copy-btn <%= initV6 ? '' : 'hidden' %>" id="copyIpv6Btn">복사</button>
+                    </div>
                 </div>
                 <p class="desc">
                     현재 위치는
@@ -120,7 +138,7 @@
         </footer>
     </div>
 
-    <script src="/js/main.js" defer></script>
+    <script src="/js/main.js?v=<%= Date.now() %>" defer></script>
 </body>
 
 </html>

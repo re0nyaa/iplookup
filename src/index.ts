@@ -95,6 +95,13 @@ app.use(
                 scriptSrc: ["'self'"],
                 styleSrc: ["'self'"],
                 fontSrc: ["'self'"],
+                connectSrc: [
+                    "'self'",
+                    "https://ipv4.icanhazip.com",
+                    "https://ipv6.icanhazip.com",
+                    "https://api4.ipify.org",
+                    "https://api6.ipify.org",
+                ],
             },
         },
     })

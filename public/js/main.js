@@ -51,6 +51,14 @@ const apiLink = document.getElementById("apiLink")
 const errorBox = document.getElementById("errorBox")
 const resetBtn = document.getElementById("resetBtn")
 const ipInput = document.getElementById("ipInput")
+const dualIpList = document.getElementById("dualIpList")
+const dualIpv4Val = document.getElementById("dualIpv4Val")
+const dualIpv6Val = document.getElementById("dualIpv6Val")
+const copyIpv4Btn = document.getElementById("copyIpv4Btn")
+const copyIpv6Btn = document.getElementById("copyIpv6Btn")
+
+let detectedIpv4 = null
+let detectedIpv6 = null
 
 const initialState = {
     ip: ipDisplay.textContent.trim(),
@@ -126,18 +134,7 @@ function renderData(d) {
     resetBtn.classList.remove("hidden")
 }
 
-document.getElementById("copyBtn").addEventListener("click", async () => {
-    try {
-        await navigator.clipboard.writeText(ipDisplay.textContent.trim())
-        const copyText = document.getElementById("copyText")
-        copyText.textContent = "복사됨 ✓"
-        setTimeout(() => (copyText.textContent = "복사"), 1500)
-    } catch {}
-})
-
-document.getElementById("lookupForm").addEventListener("submit", async (e) => {
-    e.preventDefault()
-    const targetIp = ipInput.value.trim()
+async function lookupIpAddress(targetIp) {
     if (!targetIp) return
     errorBox.classList.add("hidden")
 
@@ -167,10 +164,48 @@ document.getElementById("lookupForm").addEventListener("submit", async (e) => {
             network: a.network || "--",
             domain: a.domain || "--",
         })
+        dualIpList?.classList.add("hidden")
     } catch (err) {
         errorBox.textContent = err.message || "조회 중 오류가 발생했습니다."
         errorBox.classList.remove("hidden")
     }
+}
+
+async function copyTextToClipboard(text, btnElement) {
+    if (!text) return
+    try {
+        await navigator.clipboard.writeText(text)
+        const originalText = btnElement.textContent
+        btnElement.textContent = "복사됨 ✓"
+        setTimeout(() => (btnElement.textContent = originalText), 1500)
+    } catch {}
+}
+
+document.getElementById("copyBtn").addEventListener("click", () => {
+    copyTextToClipboard(ipDisplay.textContent.trim(), document.getElementById("copyText"))
+})
+
+copyIpv4Btn?.addEventListener("click", () => {
+    if (detectedIpv4) copyTextToClipboard(detectedIpv4, copyIpv4Btn)
+})
+
+copyIpv6Btn?.addEventListener("click", () => {
+    if (detectedIpv6) copyTextToClipboard(detectedIpv6, copyIpv6Btn)
+})
+
+dualIpv4Val?.addEventListener("click", () => {
+    if (detectedIpv4) lookupIpAddress(detectedIpv4)
+})
+
+dualIpv6Val?.addEventListener("click", () => {
+    if (detectedIpv6) lookupIpAddress(detectedIpv6)
+})
+
+document.getElementById("lookupForm").addEventListener("submit", async (e) => {
+    e.preventDefault()
+    const targetIp = ipInput.value.trim()
+    if (!targetIp) return
+    await lookupIpAddress(targetIp)
 })
 
 resetBtn.addEventListener("click", () => {
@@ -187,5 +222,125 @@ resetBtn.addEventListener("click", () => {
     metaDomain.textContent = ""
     initialState.metaDomainNodes.forEach((n) => metaDomain.appendChild(n.cloneNode(true)))
     apiLink.href = initialState.apiHref
+    dualIpList?.classList.remove("hidden")
     resetBtn.classList.add("hidden")
 })
+
+async function fetchIp(url) {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 3000)
+    try {
+        const res = await fetch(url, { signal: controller.signal })
+        clearTimeout(timeoutId)
+        if (!res.ok) return null
+        const text = await res.text()
+        const trimmed = text.trim()
+        if (trimmed.startsWith("{")) {
+            const parsed = JSON.parse(trimmed)
+            return parsed.ip || null
+        }
+        return trimmed || null
+    } catch {
+        clearTimeout(timeoutId)
+        return null
+    }
+}
+
+async function getIpv4() {
+    return (
+        (await fetchIp("https://ipv4.icanhazip.com")) ||
+        (await fetchIp("https://api4.ipify.org?format=json"))
+    )
+}
+
+async function getIpv6() {
+    return (
+        (await fetchIp("https://ipv6.icanhazip.com")) ||
+        (await fetchIp("https://api6.ipify.org?format=json"))
+    )
+}
+
+async function detectDualStack() {
+    const isLocalhost =
+        window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1" ||
+        window.location.hostname === "::1"
+
+    if (isLocalhost) {
+        detectedIpv4 = "1.1.1.1"
+        detectedIpv6 = "1.1.1.1"
+        if (dualIpv4Val) {
+            dualIpv4Val.textContent = "1.1.1.1"
+            dualIpv4Val.classList.remove("disabled")
+            copyIpv4Btn?.classList.remove("hidden")
+        }
+        if (dualIpv6Val) {
+            dualIpv6Val.textContent = "1.1.1.1"
+            dualIpv6Val.classList.remove("disabled")
+            copyIpv6Btn?.classList.remove("hidden")
+        }
+        return
+    }
+
+    const currentIp = initialState.ip || ""
+    const isCurrentV6 = currentIp.includes(":")
+
+    if (isCurrentV6) {
+        detectedIpv6 = currentIp
+        if (dualIpv6Val) {
+            dualIpv6Val.textContent = currentIp
+            dualIpv6Val.classList.remove("disabled")
+            copyIpv6Btn?.classList.remove("hidden")
+        }
+    } else if (currentIp && currentIp !== "Unknown") {
+        detectedIpv4 = currentIp
+        if (dualIpv4Val) {
+            dualIpv4Val.textContent = currentIp
+            dualIpv4Val.classList.remove("disabled")
+            copyIpv4Btn?.classList.remove("hidden")
+        }
+    }
+
+    const tasks = []
+    if (!detectedIpv4) {
+        tasks.push(
+            getIpv4().then((v4) => {
+                detectedIpv4 = v4
+                if (dualIpv4Val) {
+                    if (v4) {
+                        dualIpv4Val.textContent = v4
+                        dualIpv4Val.classList.remove("disabled")
+                        copyIpv4Btn?.classList.remove("hidden")
+                    } else {
+                        dualIpv4Val.textContent = "미지원"
+                        dualIpv4Val.classList.add("disabled")
+                        copyIpv4Btn?.classList.add("hidden")
+                    }
+                }
+            })
+        )
+    }
+
+    if (!detectedIpv6) {
+        tasks.push(
+            getIpv6().then((v6) => {
+                detectedIpv6 = v6
+                if (dualIpv6Val) {
+                    if (v6) {
+                        dualIpv6Val.textContent = v6
+                        dualIpv6Val.classList.remove("disabled")
+                        copyIpv6Btn?.classList.remove("hidden")
+                    } else {
+                        dualIpv6Val.textContent = "미지원"
+                        dualIpv6Val.classList.add("disabled")
+                        copyIpv6Btn?.classList.add("hidden")
+                    }
+                }
+            })
+        )
+    }
+
+    await Promise.allSettled(tasks)
+}
+
+detectDualStack()

@@ -103,6 +103,72 @@ body {
     border-bottom-color: var(--fg);
 }
 
+.dual-ip-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 2px;
+}
+
+.dual-ip-item {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--muted);
+}
+
+.dual-ip-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    flex-shrink: 0;
+}
+
+.dual-ip-sep {
+    color: var(--line);
+    user-select: none;
+}
+
+.dual-ip-val {
+    color: var(--fg);
+    cursor: pointer;
+    font-weight: 500;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    transition: opacity 0.15s ease;
+}
+
+.dual-ip-val:hover {
+    opacity: 0.75;
+}
+
+.dual-ip-val.disabled {
+    color: var(--subtle);
+    cursor: default;
+}
+
+.mini-copy-btn {
+    background: none;
+    border: none;
+    color: var(--fg);
+    font-size: 13px;
+    font-weight: 600;
+    font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
+    cursor: pointer;
+    padding: 2px 0;
+    margin-left: 2px;
+    border-bottom: 1px solid var(--muted);
+    transition: opacity 0.15s ease, border-color 0.15s ease;
+}
+
+.mini-copy-btn:hover {
+    opacity: 0.75;
+    border-bottom-color: var(--fg);
+}
+
 .desc {
     color: var(--muted);
     font-size: 16px;
