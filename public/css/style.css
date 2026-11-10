@@ -173,6 +173,17 @@ body {
     word-break: break-word;
 }
 
+.data-val a {
+    color: var(--fg);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: opacity 0.15s ease;
+}
+
+.data-val a:hover {
+    opacity: 0.75;
+}
+
 .error-msg {
     color: var(--danger);
     font-size: 13px;

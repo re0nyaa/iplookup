@@ -13,21 +13,53 @@ const initialState = {
     ip: ipDisplay.textContent.trim(),
     countrySummary: countrySummary.textContent.trim(),
     metaCountry: metaCountry.textContent.trim(),
-    metaOrg: metaOrg.textContent.trim(),
+    metaOrgNodes: Array.from(metaOrg.childNodes).map((n) => n.cloneNode(true)),
     metaRoute: metaRoute.textContent.trim(),
-    metaDomain: metaDomain.textContent.trim(),
+    metaDomainNodes: Array.from(metaDomain.childNodes).map((n) => n.cloneNode(true)),
     apiHref: apiLink.getAttribute("href"),
+}
+
+function setMetaDomain(domainRaw) {
+    metaDomain.textContent = ""
+    const domain =
+        domainRaw && domainRaw !== "--" ? String(domainRaw).trim() : null
+    if (domain) {
+        const link = document.createElement("a")
+        link.href = `https://${domain}`
+        link.target = "_blank"
+        link.rel = "noopener"
+        link.textContent = domain
+        metaDomain.appendChild(link)
+    } else {
+        metaDomain.textContent = "--"
+    }
+}
+
+function setMetaOrg(orgName, asnRaw) {
+    metaOrg.textContent = ""
+    const asnClean =
+        asnRaw && asnRaw !== "--" ? String(asnRaw).replace(/^AS/i, "") : null
+    if (asnClean) {
+        metaOrg.appendChild(document.createTextNode(`${orgName} (`))
+        const link = document.createElement("a")
+        link.href = `https://radar.cloudflare.com/ko-kr/traffic/as${encodeURIComponent(asnClean)}`
+        link.target = "_blank"
+        link.rel = "noopener"
+        link.textContent = `AS${asnClean}`
+        metaOrg.appendChild(link)
+        metaOrg.appendChild(document.createTextNode(")"))
+    } else {
+        metaOrg.textContent = `${orgName} (--)`
+    }
 }
 
 function renderData(d) {
     ipDisplay.textContent = d.ip
     countrySummary.textContent = `${d.country_name} (${d.country_code})`
     metaCountry.textContent = `${d.country_name} (${d.country_code} · ${d.continent})`
-    const asnStr =
-        d.asn && d.asn !== "--" ? `AS${String(d.asn).replace(/^AS/i, "")}` : "--"
-    metaOrg.textContent = `${d.org} (${asnStr})`
+    setMetaOrg(d.org, d.asn)
     metaRoute.textContent = d.route
-    metaDomain.textContent = d.domain
+    setMetaDomain(d.domain)
     apiLink.href = `/api/ip/${encodeURIComponent(d.ip)}`
     resetBtn.classList.remove("hidden")
 }
@@ -83,9 +115,11 @@ resetBtn.addEventListener("click", () => {
     ipDisplay.textContent = initialState.ip
     countrySummary.textContent = initialState.countrySummary
     metaCountry.textContent = initialState.metaCountry
-    metaOrg.textContent = initialState.metaOrg
+    metaOrg.textContent = ""
+    initialState.metaOrgNodes.forEach((n) => metaOrg.appendChild(n.cloneNode(true)))
     metaRoute.textContent = initialState.metaRoute
-    metaDomain.textContent = initialState.metaDomain
+    metaDomain.textContent = ""
+    initialState.metaDomainNodes.forEach((n) => metaDomain.appendChild(n.cloneNode(true)))
     apiLink.href = initialState.apiHref
     resetBtn.classList.add("hidden")
 })
