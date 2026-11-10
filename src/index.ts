@@ -1,7 +1,6 @@
 import express from "express"
 import dotenv from "dotenv"
 import path from "path"
-import fs from "fs"
 import { fileURLToPath } from "url"
 import {
     getMmdbStatus,
@@ -37,35 +36,83 @@ const app = express()
 const PORT = 3003
 
 app.use("/api/", limiter)
-app.use(helmet())
+app.use(
+    helmet({
+        contentSecurityPolicy: {
+            directives: {
+                defaultSrc: ["'self'"],
+                scriptSrc: ["'self'"],
+                styleSrc: ["'self'", "https://cdn.jsdelivr.net"],
+                fontSrc: ["'self'", "https://cdn.jsdelivr.net"],
+            },
+        },
+    })
+)
 app.disable("x-powered-by")
 app.set("trust proxy", 1)
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.set("view engine", "ejs")
 app.set("views", path.join(process.cwd(), "views"))
+app.use("/css", express.static(path.join(process.cwd(), "public", "css")))
+app.use("/js", express.static(path.join(process.cwd(), "public", "js")))
 
 app.get("/", (req, res) => {
-    const ip = req.ip
+    let ip = req.ip
     if (!isValidIP(ip?.toString() || "")) {
         return res.status(400).json({ error: "Invalid IP", status: 400 })
     }
+    if (ip?.startsWith("::")) {
+        ip = "1.1.1.1"
+    }
+
     console.log(`[IP Lookup] Request for IP: ${ip}`)
     const data = lookupIp(ip?.toString() || "")
-    const countryData = data?.country as {
-        country_name?: string
-        country_code?: string
-    } | null
+    const countryData = data?.country as Record<string, any> | null
+    const asnData = data?.asn as Record<string, any> | null
 
     if (!data) {
         return res.status(404).json({ error: "IP data not found", status: 404 })
     }
 
+    const ua = (req.headers["user-agent"] || "").toLowerCase()
+    const accept = (req.headers["accept"] || "").toLowerCase()
+    const isCliOrApi =
+        /curl|wget|httpie|powershell|python-requests|go-http-client| fetch/i.test(ua) ||
+        accept.includes("application/json") ||
+        !accept.includes("text/html")
+
+    if (isCliOrApi) {
+        return res.json({ ip: ip?.toString() || "Unknown", data })
+    }
+
     res.render("index", {
         countryData: {
             ip: ip?.toString() || "Unknown",
-            country_name: countryData?.country_name || "Unknown",
-            country_code: countryData?.country_code || "--",
+            country_name:
+                countryData?.country_name ||
+                countryData?.country?.names?.en ||
+                "Unknown",
+            country_code:
+                countryData?.country_code ||
+                countryData?.country?.iso_code ||
+                "--",
+            continent:
+                countryData?.continent ||
+                countryData?.continent_code ||
+                countryData?.continent?.code ||
+                "--",
+            asn:
+                asnData?.asn ||
+                asnData?.autonomous_system_number ||
+                "--",
+            org:
+                asnData?.name ||
+                asnData?.org ||
+                asnData?.autonomous_system_organization ||
+                "Unknown",
+            domain: asnData?.domain || "--",
+            route: asnData?.route || "--",
         },
     })
 })

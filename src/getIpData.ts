@@ -97,6 +97,12 @@ function getDbPath(kind: MmdbKind): string {
     return path.join(dataDir, fileName)
 }
 
+function isFileFresh(filePath: string): boolean {
+    if (!fs.existsSync(filePath)) return false
+    const { mtimeMs } = fs.statSync(filePath)
+    return Date.now() - mtimeMs < DEFAULT_UPDATE_INTERVAL_MS
+}
+
 async function refreshMmdb(reason: "startup" | "daily" | "manual") {
     if (updateTask) return updateTask
 
@@ -105,6 +111,11 @@ async function refreshMmdb(reason: "startup" | "daily" | "manual") {
 
         for (const kind of kinds) {
             const dbPath = getDbPath(kind)
+            if (reason === "startup" && isFileFresh(dbPath)) {
+                console.log(`[MMDB] Skipping ${kind} download (${reason}): file is up to date`)
+                continue
+            }
+
             const dbDir = path.dirname(dbPath)
             const sourceUrl = getMmdbUrl(kind)
             const downloadedPath = await downloadData(sourceUrl, dbDir)
