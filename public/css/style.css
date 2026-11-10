@@ -1,11 +1,11 @@
 :root {
-    --bg: #0a0a0a;
-    --fg: #ededed;
-    --muted: #888888;
-    --subtle: #555555;
-    --line: #222222;
-    --line-focus: #555555;
-    --danger: #e5484d;
+    --bg: #050505;
+    --fg: #ffffff;
+    --muted: #b5b5b5;
+    --subtle: #888888;
+    --line: #383838;
+    --line-focus: #ffffff;
+    --danger: #ff6b6b;
 }
 
 * {
@@ -86,36 +86,37 @@ body {
 .text-btn {
     background: none;
     border: none;
-    color: var(--muted);
+    color: var(--fg);
     font-size: 13px;
+    font-weight: 600;
     font-family: inherit;
     cursor: pointer;
     padding: 4px 0;
-    border-bottom: 1px solid transparent;
-    transition: color 0.15s ease, border-color 0.15s ease;
+    border-bottom: 1px solid var(--muted);
+    transition: opacity 0.15s ease, border-color 0.15s ease;
 }
 
 .text-btn:hover {
-    color: var(--fg);
+    opacity: 0.75;
     border-bottom-color: var(--fg);
 }
 
 .desc {
     color: var(--muted);
-    font-size: 15px;
+    font-size: 16px;
     line-height: 1.6;
 }
 
 .desc strong {
     color: var(--fg);
-    font-weight: 500;
+    font-weight: 700;
 }
 
 .search-bar {
     display: flex;
     align-items: center;
     gap: 16px;
-    border-bottom: 1px solid var(--line);
+    border-bottom: 1px solid var(--muted);
     padding-bottom: 10px;
     transition: border-color 0.15s ease;
 }
@@ -130,12 +131,14 @@ body {
     border: none;
     outline: none;
     color: var(--fg);
-    font-size: 15px;
+    font-size: 16px;
+    font-weight: 500;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 .search-input::placeholder {
     color: var(--subtle);
+    font-weight: 400;
     font-family: "Pretendard Variable", Pretendard, sans-serif;
 }
 
@@ -155,13 +158,15 @@ body {
 }
 
 .data-key {
-    font-size: 13px;
+    font-size: 14px;
+    font-weight: 500;
     color: var(--muted);
     flex-shrink: 0;
 }
 
 .data-val {
-    font-size: 15px;
+    font-size: 16px;
+    font-weight: 600;
     color: var(--fg);
     text-align: right;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
