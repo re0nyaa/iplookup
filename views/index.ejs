@@ -4,7 +4,42 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>IP Lookup — Network Intelligence</title>
+    <title>내 IP 주소 확인 및 네트워크 조회 — ip.eiv.me</title>
+    <meta name="description" content="접속 중인 내 공인 IP 주소, 국가, ISP, ASN, CIDR 서브넷 대역을 실시간으로 확인하고 다른 IP 주소를 간편하게 조회할 수 있는 고속 네트워크 인텔리전스 도구입니다." />
+    <meta name="keywords" content="내 아이피 확인, ip 확인, 내 ip 주소, ip 조회, ip lookup, asn 조회, 네트워크 조회, ip.eiv.me" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://ip.eiv.me/" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://ip.eiv.me/" />
+    <meta property="og:site_name" content="ip.eiv.me" />
+    <meta property="og:title" content="내 IP 주소 확인 및 네트워크 조회 — ip.eiv.me" />
+    <meta property="og:description" content="접속 중인 내 공인 IP 주소, 국가, 통신사(ISP), ASN, 네트워크 대역을 실시간으로 확인하고 조회하세요." />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:url" content="https://ip.eiv.me/" />
+    <meta name="twitter:title" content="내 IP 주소 확인 및 네트워크 조회 — ip.eiv.me" />
+    <meta name="twitter:description" content="접속 중인 내 공인 IP 주소, 국가, 통신사(ISP), ASN, 네트워크 대역을 실시간으로 확인하고 조회하세요." />
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "ip.eiv.me",
+      "url": "https://ip.eiv.me/",
+      "description": "내 공인 IP 주소 확인 및 실시간 네트워크 인텔리전스 조회 도구",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "All",
+      "offers": {
+        "@type": "Offer",
+        "price": "0"
+      }
+    }
+    </script>
+
     <link rel="stylesheet"
         href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
     <link rel="stylesheet" href="/css/style.css" />
@@ -32,7 +67,7 @@
             </section>
 
             <form class="search-bar" id="lookupForm">
-                <input type="text" id="ipInput" class="search-input" placeholder="조회할 IP 주소 입력 (예: 1.1.1.1)"
+                <input type="text" id="ipInput" class="search-input" placeholdeyar="조회할 IP 주소 입력 (예: 1.1.1.1)"
                     autocomplete="off" />
                 <button type="submit" class="text-btn">조회</button>
                 <button type="button" id="resetBtn" class="text-btn hidden">초기화</button>
@@ -76,10 +111,10 @@
         </main>
 
         <footer class="footer">
-            <div>
-                Powered by
-                <a href="https://iplocate.io" target="_blank" rel="noopener">IPLocate.io</a>
-                · <a href="https://renyaa.com" target="_blank" rel="noopener">Renyaa</a>
+            <div class="footer-meta">
+                <span>Copyright &copy; EIV <%= new Date().getFullYear() %>. All Rights Reserved.</span>
+                <span class="footer-divider">·</span>
+                <span>Powered by <a href="https://iplocate.io" target="_blank" rel="noopener">IPLocate.io</a> · <a href="https://eiv.me" target="_blank" rel="noopener">EIV</a></span>
             </div>
             <div>
                 <a href="/api/ip/<%= countryData?.ip %>" id="apiLink" target="_blank" rel="noopener">JSON</a>
